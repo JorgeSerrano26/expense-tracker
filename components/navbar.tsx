@@ -1,13 +1,15 @@
 "use client"
 
+import { ModeToggle } from "@/components/mode-toggle"
+import { cn } from "@/lib/utils"
+import { useSession } from "@/providers/useSession/useSession"
+import { CreditCard, Home, PlusCircle, Wallet } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { CreditCard, Home, PlusCircle, Wallet } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { ModeToggle } from "@/components/mode-toggle"
 
 export function Navbar() {
   const pathname = usePathname()
+  const user = useSession()
 
   const routes = [
     {
@@ -78,6 +80,9 @@ export function Navbar() {
           </nav>
           <ModeToggle />
         </div>
+        {user && <div className="ml-2">
+          <p>{user?.user?.email}</p>
+        </div>}
       </div>
     </header>
   )
