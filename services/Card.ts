@@ -6,6 +6,21 @@ export type CardBrand = {
     value: string
 }
 
+export type CardType = {
+    id: number
+    user_id: string
+    brand_id: number
+    name: string
+    card_type: 'credit' | 'debit'
+    expire_date: string
+    currency_id: number
+    created_at: string
+    last_digits: string
+    color: string
+    card_brands: { name: string }
+    currencies: { code: string }
+}
+
 export class Card {
     static async getCards() {
         const client = await createClient()
@@ -14,7 +29,7 @@ export class Card {
 
         const { data, error } = await client
             .from("cards")
-            .select()
+            .select<'*, card_brands(name), currencies(code)', CardType>('*, card_brands(name), currencies(code)')
             .eq("user_id", user?.id)
 
         if (error) {

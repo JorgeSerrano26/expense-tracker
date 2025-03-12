@@ -1,9 +1,6 @@
-"use client"
-
-import { useState } from "react"
-import { CreditCard, Edit, MoreHorizontal, Trash } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,39 +9,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
+import { cn } from "@/lib/utils"
+import { Card as CardService } from "@/services/Card"
+import { CreditCard, Edit, MoreHorizontal, Trash } from "lucide-react"
 
-export function CardsList() {
-  // This would normally come from your database
-  const [cards, setCards] = useState([
-    {
-      id: "1",
-      name: "Visa Galicia",
-      type: "visa",
-      lastDigits: "1234",
-      expiryDate: "12/25",
-      color: "bg-blue-500",
-    },
-    {
-      id: "2",
-      name: "Mastercard BBVA",
-      type: "mastercard",
-      lastDigits: "5678",
-      expiryDate: "06/24",
-      color: "bg-red-500",
-    },
-    {
-      id: "3",
-      name: "American Express",
-      type: "amex",
-      lastDigits: "9012",
-      expiryDate: "03/26",
-      color: "bg-green-500",
-    },
-  ])
+export async function CardsList() {
+  const cards = await CardService.getCards()
 
-  const deleteCard = (id: string) => {
-    setCards(cards.filter((card) => card.id !== id))
+  const getExpireDate = (expireDate: string) => {
+    const date = new Date(expireDate)
+    return `${date.getMonth() + 1}/${date.getFullYear()}`
   }
 
   return (
@@ -62,7 +36,7 @@ export function CardsList() {
               <div className="flex justify-between items-start">
                 <div>
                   <CardTitle>{card.name}</CardTitle>
-                  <CardDescription className="text-white/80">**** **** **** {card.lastDigits}</CardDescription>
+                  <CardDescription className="text-white/80">**** **** **** {card.last_digits}</CardDescription>
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -78,7 +52,7 @@ export function CardsList() {
                       <Edit className="mr-2 h-4 w-4" />
                       Edit card
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => deleteCard(card.id)}>
+                    <DropdownMenuItem>
                       <Trash className="mr-2 h-4 w-4" />
                       Delete card
                     </DropdownMenuItem>
@@ -90,11 +64,16 @@ export function CardsList() {
               <div className="flex justify-between items-center">
                 <div className="flex items-center">
                   <CreditCard className="mr-2 h-4 w-4" />
-                  <span className="text-sm text-muted-foreground">Expires: {card.expiryDate}</span>
+                  <span className="text-sm text-muted-foreground">Expires: {getExpireDate(card.expire_date)}</span>
                 </div>
-                <Badge variant="outline" className="capitalize">
-                  {card.type}
-                </Badge>
+                <div className="flex gap-2">
+                  <Badge className="capitalize" color={card.color}>
+                    {card.currencies.code}
+                  </Badge>
+                  <Badge variant="outline" className={cn("capitalize", card.color)}>
+                    {card.card_brands.name}
+                  </Badge>
+                </div>
               </div>
             </CardContent>
           </Card>
