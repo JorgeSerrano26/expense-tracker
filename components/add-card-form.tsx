@@ -2,31 +2,39 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { CardBrandSelector } from "@/app/cards/new/components/CardBrandSelector"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useToast } from "@/components/ui/use-toast"
+import { CardBrand } from "@/services/Card"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { toast } from 'sonner'
 
-export function AddCardForm() {
+type Props = {
+  brands: CardBrand[]
+}
+
+export function AddCardForm({ brands }: Props) {
   const router = useRouter()
-  const { toast } = useToast()
   const [cardType, setCardType] = useState("")
+  const [cardBrand, setBrand] = useState("")
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    // Get form data
+    const formData = new FormData(e.currentTarget as HTMLFormElement)
+    console.log(formData.get("name"))
 
-    // Here you would normally save the card to your database
-
-    toast({
-      title: "Card added",
+    toast.success("Card added", {
+      duration: 3000,
       description: "Your payment card has been successfully added.",
     })
 
-    router.push("/cards")
+    //router.push("/cards")
   }
 
   return (
@@ -39,20 +47,9 @@ export function AddCardForm() {
               <Input id="name" placeholder="e.g., Visa Galicia" required />
             </div>
 
-            <div className="grid gap-3">
-              <Label htmlFor="type">Card Type</Label>
-              <Select onValueChange={setCardType} required>
-                <SelectTrigger id="type">
-                  <SelectValue placeholder="Select card type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="visa">Visa</SelectItem>
-                  <SelectItem value="mastercard">Mastercard</SelectItem>
-                  <SelectItem value="amex">American Express</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+
+            <CardBrandSelector brands={brands} setCardType={setBrand} />
+
 
             <div className="grid gap-3">
               <Label htmlFor="number">Card Number</Label>
@@ -66,8 +63,20 @@ export function AddCardForm() {
                 <Input id="expiry" placeholder="MM/YY" required />
               </div>
               <div className="grid gap-3">
-                <Label htmlFor="cvv">CVV</Label>
-                <Input id="cvv" type="password" placeholder="***" required />
+                <Label htmlFor="card-type">Tipo de tarjeta</Label>
+                <Select onValueChange={setCardType} required>
+                  <SelectTrigger id="type">
+                    <SelectValue placeholder="Select card type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem key="brand-credit"
+                      value="credit">Tarjeta de credito
+                    </SelectItem>
+                    <SelectItem key="brand-debit"
+                      value="debit">Tarjeta de debito
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -94,7 +103,7 @@ export function AddCardForm() {
           </div>
         </CardContent>
       </Card>
-    </form>
+    </form >
   )
 }
 

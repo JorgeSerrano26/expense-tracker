@@ -1,11 +1,11 @@
 import { Navbar } from "@/components/navbar"
 import { ThemeProvider } from "@/components/theme-provider"
-import { Toaster } from "@/components/ui/toaster"
 import { createClient } from '@/db/supabase/server'
 import { SessionProvider } from "@/providers/useSession/useSession"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import type React from "react"
+import { Toaster } from 'sonner'
 import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -34,7 +34,7 @@ export default async function RootLayout({
               <Navbar />
               <main className="flex-1 container mx-auto py-4 px-4 md:px-6">{children}</main>
             </div>
-            <Toaster />
+            <Toaster richColors />
           </ThemeProvider>
         </SessionProvider>
       </body>
