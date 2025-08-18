@@ -1,0 +1,220 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  cards         Card[]
+  expenses      Expense[]
+  subscriptions Subscription[]
+  loans         Loan[]
+  transfers     Transfer[]
+  sharedExpenses SharedExpense[]
+
+  @@map("users")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Card {
+  id        String   @id @default(cuid())
+  name      String
+  lastFour  String
+  type      CardType @default(CREDIT)
+  color     String   @default("#3B82F6")
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expenses Expense[]
+
+  @@map("cards")
+}
+
+model Expense {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  amount      Float
+  date        DateTime
+  category    String
+  isShared    Boolean     @default(false)
+  userId      String
+  cardId      String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  card           Card?           @relation(fields: [cardId], references: [id])
+  sharedExpenses SharedExpense[]
+
+  @@map("expenses")
+}
+
+model SharedExpense {
+  id         String           @id @default(cuid())
+  expenseId  String
+  userId     String
+  shareType  ShareType        @default(PERCENTAGE)
+  shareValue Float
+  status     SharedExpenseStatus @default(PENDING)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  expense Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([expenseId, userId])
+  @@map("shared_expenses")
+}
+
+model Subscription {
+  id          String            @id @default(cuid())
+  name        String
+  description String?
+  amount      Float
+  frequency   SubscriptionFrequency @default(MONTHLY)
+  nextPayment DateTime
+  isActive    Boolean           @default(true)
+  category    String
+  userId      String
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model Loan {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  amount      Float
+  remainingAmount Float
+  interestRate Float?    @default(0)
+  dueDate     DateTime?
+  status      LoanStatus @default(ACTIVE)
+  type        LoanType   @default(BORROWED)
+  userId      String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("loans")
+}
+
+model Transfer {
+  id          String         @id @default(cuid())
+  title       String
+  description String?
+  amount      Float
+  type        TransferType   @default(SENT)
+  status      TransferStatus @default(COMPLETED)
+  recipientEmail String?
+  userId      String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("transfers")
+}
+
+enum CardType {
+  CREDIT
+  DEBIT
+  CASH
+}
+
+enum ShareType {
+  PERCENTAGE
+  FIXED
+}
+
+enum SharedExpenseStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum SubscriptionFrequency {
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum LoanStatus {
+  ACTIVE
+  PAID
+  OVERDUE
+}
+
+enum LoanType {
+  BORROWED
+  LENT
+}
+
+enum TransferType {
+  SENT
+  RECEIVED
+}
+
+enum TransferStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
