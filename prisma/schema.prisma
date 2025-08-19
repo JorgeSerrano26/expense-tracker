@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,211 +7,159 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
-  accounts      Account[]
-  sessions      Session[]
-  cards         Card[]
-  expenses      Expense[]
-  subscriptions Subscription[]
-  loans         Loan[]
-  transfers     Transfer[]
-  sharedExpenses SharedExpense[]
+  id                      String                   @id @default(cuid())
+  provider                String
+  providerId              String
+  email                   String                   @unique
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  cards                   Card[]
+  expenses                Expense[]
+  friends                 Friend[]
+  installmentParticipants InstallmentParticipant[]
+  borrowedLoans           Loan[]                   @relation("BorrowerLoans")
+  lentLoans               Loan[]                   @relation("LenderLoans")
+  subscriptions           Subscription[]
 
   @@map("users")
 }
 
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
+model Friend {
+  id                      Int                      @id @default(autoincrement())
+  userId                  String?
+  name                    String
+  email                   String
+  createdAt               DateTime                 @default(now())
+  user                    User?                    @relation(fields: [userId], references: [id])
+  installmentParticipants InstallmentParticipant[]
 
-  @@unique([identifier, token])
+  @@map("friends")
 }
 
 model Card {
-  id        String   @id @default(cuid())
-  name      String
-  lastFour  String
-  type      CardType @default(CREDIT)
-  color     String   @default("#3B82F6")
-  userId    String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  expenses Expense[]
+  id          Int       @id @default(autoincrement())
+  userId      String
+  type        CardType
+  bank        String?
+  lastDigits  String?
+  description String
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expenses    Expense[]
 
   @@map("cards")
 }
 
-model Expense {
-  id          String      @id @default(cuid())
-  title       String
-  description String?
-  amount      Float
-  date        DateTime
-  category    String
-  isShared    Boolean     @default(false)
-  userId      String
-  cardId      String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+model Currency {
+  id            Int            @id @default(autoincrement())
+  code          String         @unique
+  description   String
+  expenses      Expense[]
+  loans         Loan[]
+  subscriptions Subscription[]
 
-  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  card           Card?           @relation(fields: [cardId], references: [id])
-  sharedExpenses SharedExpense[]
+  @@map("currencies")
+}
+
+model Expense {
+  id                  Int                  @id @default(autoincrement())
+  userId              String
+  paymentType         PaymentType
+  cardId              Int?
+  currencyId          Int
+  description         String
+  amount              Decimal              @db.Decimal(10, 2)
+  installments        Int                  @default(1)
+  createdAt           DateTime             @default(now())
+  expenseInstallments ExpenseInstallment[]
+  card                Card?                @relation(fields: [cardId], references: [id])
+  currency            Currency             @relation(fields: [currencyId], references: [id])
+  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("expenses")
 }
 
-model SharedExpense {
-  id         String           @id @default(cuid())
-  expenseId  String
-  userId     String
-  shareType  ShareType        @default(PERCENTAGE)
-  shareValue Float
-  status     SharedExpenseStatus @default(PENDING)
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
+model ExpenseInstallment {
+  id                      Int                      @id @default(autoincrement())
+  expenseId               Int
+  number                  Int
+  amount                  Decimal                  @db.Decimal(10, 2)
+  dueDate                 DateTime
+  createdAt               DateTime                 @default(now())
+  expense                 Expense                  @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  installmentParticipants InstallmentParticipant[]
 
-  expense Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("expense_installments")
+}
 
-  @@unique([expenseId, userId])
-  @@map("shared_expenses")
+model InstallmentParticipant {
+  id            Int                @id @default(autoincrement())
+  installmentId Int
+  userId        String?
+  friendId      Int?
+  type          ParticipantType
+  amount        Decimal            @db.Decimal(10, 2)
+  paid          Boolean            @default(false)
+  paidAt        DateTime?
+  friend        Friend?            @relation(fields: [friendId], references: [id])
+  installment   ExpenseInstallment @relation(fields: [installmentId], references: [id], onDelete: Cascade)
+  user          User?              @relation(fields: [userId], references: [id])
+
+  @@map("installment_participants")
 }
 
 model Subscription {
-  id          String            @id @default(cuid())
-  name        String
-  description String?
-  amount      Float
-  frequency   SubscriptionFrequency @default(MONTHLY)
-  nextPayment DateTime
-  isActive    Boolean           @default(true)
-  category    String
+  id          Int                   @id @default(autoincrement())
   userId      String
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currencyId  Int
+  description String
+  amount      Decimal               @db.Decimal(10, 2)
+  type        SubscriptionFrequency
+  startDate   DateTime
+  endDate     DateTime?
+  currency    Currency              @relation(fields: [currencyId], references: [id])
+  user        User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("subscriptions")
 }
 
 model Loan {
-  id          String     @id @default(cuid())
-  title       String
-  description String?
-  amount      Float
-  remainingAmount Float
-  interestRate Float?    @default(0)
-  dueDate     DateTime?
-  status      LoanStatus @default(ACTIVE)
-  type        LoanType   @default(BORROWED)
-  userId      String
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           Int       @id @default(autoincrement())
+  borrowerId   String
+  lenderId     String
+  currencyId   Int
+  amount       Decimal   @db.Decimal(10, 2)
+  installments Int       @default(1)
+  paid         Boolean   @default(false)
+  interestRate Decimal?  @db.Decimal(5, 4)
+  startDate    DateTime
+  endDate      DateTime?
+  borrower     User      @relation("BorrowerLoans", fields: [borrowerId], references: [id])
+  currency     Currency  @relation(fields: [currencyId], references: [id])
+  lender       User      @relation("LenderLoans", fields: [lenderId], references: [id])
 
   @@map("loans")
 }
 
-model Transfer {
-  id          String         @id @default(cuid())
-  title       String
-  description String?
-  amount      Float
-  type        TransferType   @default(SENT)
-  status      TransferStatus @default(COMPLETED)
-  recipientEmail String?
-  userId      String
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("transfers")
-}
-
 enum CardType {
-  CREDIT
   DEBIT
+  CREDIT
+}
+
+enum PaymentType {
   CASH
+  CARD
+  TRANSFER
 }
 
-enum ShareType {
-  PERCENTAGE
+enum ParticipantType {
   FIXED
-}
-
-enum SharedExpenseStatus {
-  PENDING
-  ACCEPTED
-  REJECTED
+  PERCENTAGE
 }
 
 enum SubscriptionFrequency {
-  WEEKLY
+  DAILY
   MONTHLY
-  QUARTERLY
   YEARLY
-}
-
-enum LoanStatus {
-  ACTIVE
-  PAID
-  OVERDUE
-}
-
-enum LoanType {
-  BORROWED
-  LENT
-}
-
-enum TransferType {
-  SENT
-  RECEIVED
-}
-
-enum TransferStatus {
-  PENDING
-  COMPLETED
-  FAILED
 }
