@@ -49,10 +49,9 @@ export const TransferStatus = {
 
 // Form Schemas
 export const cardSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  lastFour: z.string().length(4, "Last four digits required"),
-  type: z.enum(["CREDIT", "DEBIT", "CASH"]),
-  color: z.string().default("#3B82F6"),
+  description: z.string().min(1, "Name is required"),
+  lastDigits: z.string().length(4, "Last four digits required"),
+  type: z.enum(["CREDIT", "DEBIT"]),
   bank: z.string()
 })
 
