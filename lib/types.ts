@@ -53,6 +53,7 @@ export const cardSchema = z.object({
   lastFour: z.string().length(4, "Last four digits required"),
   type: z.enum(["CREDIT", "DEBIT", "CASH"]),
   color: z.string().default("#3B82F6"),
+  bank: z.string()
 })
 
 export const expenseSchema = z.object({

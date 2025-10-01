@@ -47,6 +47,7 @@ export function CardForm({ initialData, onSubmit, onCancel }: CardFormProps) {
       lastFour: initialData?.lastFour || "",
       type: initialData?.type || "CREDIT",
       color: initialData?.color || "#3B82F6",
+      bank: initialData?.bank || "",
     },
   })
 
@@ -69,6 +70,23 @@ export function CardForm({ initialData, onSubmit, onCancel }: CardFormProps) {
               </FormControl>
               <FormDescription>
                 A friendly name to identify this card
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+<FormField
+          control={form.control}
+          name="bank"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Bank</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g., Santander" {...field} />
+              </FormControl>
+              <FormDescription>
+                The bank that issued this card
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -115,7 +133,6 @@ export function CardForm({ initialData, onSubmit, onCancel }: CardFormProps) {
                 <SelectContent>
                   <SelectItem value="CREDIT">Credit Card</SelectItem>
                   <SelectItem value="DEBIT">Debit Card</SelectItem>
-                  <SelectItem value="CASH">Cash</SelectItem>
                 </SelectContent>
               </Select>
               <FormDescription>
@@ -142,8 +159,8 @@ export function CardForm({ initialData, onSubmit, onCancel }: CardFormProps) {
                         w-12 h-12 rounded-lg border-2 transition-all
                         ${color.class}
                         ${field.value === color.value 
-                          ? 'border-gray-900 scale-110' 
-                          : 'border-gray-300 hover:border-gray-400'
+                          ? 'border-white scale-110' 
+                          : ' hover:border-gray-400'
                         }
                       `}
                       onClick={() => field.onChange(color.value)}
