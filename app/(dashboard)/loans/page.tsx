@@ -173,7 +173,7 @@ export default function LoansPage() {
               </DialogDescription>
             </DialogHeader>
             <LoanForm
-              initialData={editingLoan}
+              initialData={editingLoan ?? undefined}
               onSubmit={editingLoan ? handleEditLoan : handleAddLoan}
               onCancel={() => {
                 setIsDialogOpen(false)
@@ -192,7 +192,7 @@ export default function LoansPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              ${borrowedAmount.toLocaleString()}
+              ${borrowedAmount.toLocaleString("en-US")}
             </div>
             <p className="text-xs text-muted-foreground">
               Outstanding debt
@@ -206,7 +206,7 @@ export default function LoansPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              ${lentAmount.toLocaleString()}
+              ${lentAmount.toLocaleString("en-US")}
             </div>
             <p className="text-xs text-muted-foreground">
               Money owed to you
@@ -234,7 +234,7 @@ export default function LoansPage() {
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold ${lentAmount - borrowedAmount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              ${Math.abs(lentAmount - borrowedAmount).toLocaleString()}
+              ${Math.abs(lentAmount - borrowedAmount).toLocaleString("en-US")}
             </div>
             <p className="text-xs text-muted-foreground">
               {lentAmount - borrowedAmount >= 0 ? 'Net creditor' : 'Net debtor'}
@@ -329,10 +329,10 @@ export default function LoansPage() {
                   <div className="flex items-center space-x-4">
                     <div className="text-right">
                       <div className="text-lg font-bold text-gray-900">
-                        ${loan.remainingAmount.toLocaleString()}
+                        ${loan.remainingAmount.toLocaleString("en-US")}
                       </div>
                       <div className="text-sm text-gray-500">
-                        of ${loan.amount.toLocaleString()}
+                        of ${loan.amount.toLocaleString("en-US")}
                       </div>
                     </div>
 

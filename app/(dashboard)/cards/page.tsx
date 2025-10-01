@@ -183,7 +183,7 @@ export default function CardsPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-500">Added</span>
                     <span className="text-sm">
-                      {new Date(card.createdAt).toLocaleDateString()}
+                      {new Date(card.createdAt).toLocaleDateString("en-US")}
                     </span>
                   </div>
                 </div>

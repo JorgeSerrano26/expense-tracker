@@ -120,7 +120,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              ${mockStats.monthlyTotal.toLocaleString()}
+              ${mockStats.monthlyTotal.toLocaleString("en-US")}
             </div>
             <p className="text-xs text-muted-foreground">
               Income - Expenses
@@ -135,7 +135,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              ${mockStats.monthlyExpenses.toLocaleString()}
+              ${mockStats.monthlyExpenses.toLocaleString("en-US")}
             </div>
             <p className="text-xs text-muted-foreground">
               This month
@@ -204,7 +204,7 @@ export default function DashboardPage() {
                       <div className="flex items-center space-x-2 text-sm text-gray-500">
                         <span>{movement.category}</span>
                         <span>•</span>
-                        <span>{new Date(movement.date).toLocaleDateString()}</span>
+                        <span>{new Date(movement.date).toLocaleDateString("en-US")}</span>
                         {movement.isShared && (
                           <>
                             <span>•</span>

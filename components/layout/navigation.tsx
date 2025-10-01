@@ -17,7 +17,7 @@ import {
 import { Icons } from "@/components/ui/icons"
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: Icons.home },
+  { name: "Dashboard", href: "/", icon: Icons.home },
   { name: "Cards", href: "/cards", icon: Icons.card },
   { name: "Expenses", href: "/expenses", icon: Icons.receipt },
   { name: "Subscriptions", href: "/subscriptions", icon: Icons.repeat },

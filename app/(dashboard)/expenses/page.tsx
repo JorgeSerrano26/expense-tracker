@@ -320,7 +320,7 @@ export default function ExpensesPage() {
                     <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
                       <span>{expense.category}</span>
                       <span>•</span>
-                      <span>{new Date(expense.date).toLocaleDateString()}</span>
+                      <span>{new Date(expense.date).toLocaleDateString("en-US")}</span>
                       <span>•</span>
                       <span>{expense.cardName}</span>
                     </div>
