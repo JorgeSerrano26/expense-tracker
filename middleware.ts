@@ -8,8 +8,14 @@ export async function middleware(req: NextRequest) {
     const token = await getToken({ req });
     const { pathname } = req.nextUrl;
 
+    console.log(token);
+
     if (!token) {
-        return NextResponse.redirect(new URL("/login", req.url));
+        if (!pathname.startsWith("/login")) {
+            return NextResponse.redirect(new URL("/login", req.url));
+        }
+        
+        return NextResponse.next();
     }
 
     if (pathname.startsWith("/login") && token) {
@@ -23,7 +29,7 @@ export async function middleware(req: NextRequest) {
 export const config = {
     matcher: [
         "/login",
-        "/dashboard/:path*",
+        "/",
         "/cards/:path*",
         "/loans/:path*",
         "/transfers/:path*",
