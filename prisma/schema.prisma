@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum CardType {
+  VISA
+  MASTERCARD
+  AMEX
+  CABAL
+  NARANJA
+  MAESTRO
+  DINERS
+  OTHER
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  TRANSFER
+}
+
+enum Currency {
+  ARS
+  USD
+  EUR
+  BRL
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+model Category {
+  id            String         @id @default(cuid())
+  name          String         @unique
+  createdAt     DateTime       @default(now())
+  expenses      Expense[]
+  subscriptions Subscription[]
+
+  @@map("categories")
+}
+
+model Card {
+  id              String         @id @default(cuid())
+  bank            String
+  lastFourDigits  String         @db.VarChar(4)
+  expirationMonth Int
+  expirationYear  Int
+  type            CardType
+  createdAt       DateTime       @default(now())
+  expenses        Expense[]
+  subscriptions   Subscription[]
+
+  @@map("cards")
+}
+
+model Subscription {
+  id              String        @id @default(cuid())
+  name            String
+  amount          Float
+  currency        Currency      @default(ARS)
+  billingCycle    BillingCycle  @default(MONTHLY)
+  billingDay      Int           @default(1)
+  startDate       DateTime
+  endDate         DateTime?
+  nextBillingDate DateTime
+  category        Category      @relation(fields: [categoryId], references: [id])
+  categoryId      String
+  paymentMethod   PaymentMethod @default(CARD)
+  card            Card?         @relation(fields: [cardId], references: [id])
+  cardId          String?
+  active          Boolean       @default(true)
+  expenses        Expense[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("subscriptions")
+}
+
+model Expense {
+  id             String        @id @default(cuid())
+  description    String
+  amount         Float
+  currency       Currency      @default(ARS)
+  note           String?
+  category       Category      @relation(fields: [categoryId], references: [id])
+  categoryId     String
+  paymentMethod  PaymentMethod @default(CASH)
+  card           Card?         @relation(fields: [cardId], references: [id])
+  cardId         String?
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  subscriptionId String?
+  date           DateTime
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@map("expenses")
+}
